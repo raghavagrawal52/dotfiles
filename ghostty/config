@@ -1,0 +1,4 @@
+theme = gruber-darker
+font-feature = -calt, -liga, -dlig
+command = bash
+config-file = ?config.local
