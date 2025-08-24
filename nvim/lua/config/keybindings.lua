@@ -1,0 +1,5 @@
+vim.keymap.set("n", "-", "<cmd>Oil<CR>", {desc = "Open parent directory  in Oil"})
+vim.keymap.set("n", "<space>x", ":.lua<CR>")
+vim.keymap.set("v", "<space>x", ":.lua<CR>")
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up" })
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down" })
