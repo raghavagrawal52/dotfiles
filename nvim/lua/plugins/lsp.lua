@@ -1,5 +1,7 @@
 local vim = vim
 
+
+
 local function goto_definition()
 	local lsp = vim.lsp
 	local params = lsp.util.make_position_params()
@@ -135,7 +137,8 @@ return {
 				-- When you move your cursor, the highlights will be cleared (the second autocommand).
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
 				if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
-					local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
+					local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight',
+						{ clear = false })
 					vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
 						buffer = event.buf,
 						group = highlight_augroup,
@@ -149,7 +152,8 @@ return {
 					})
 
 					vim.api.nvim_create_autocmd('LspDetach', {
-						group = vim.api.nvim_create_augroup('kickstart-lsp-detach', { clear = true }),
+						group = vim.api.nvim_create_augroup('kickstart-lsp-detach',
+							{ clear = true }),
 						callback = function(event2)
 							vim.lsp.buf.clear_references()
 							vim.api.nvim_clear_autocmds { group = 'kickstart-lsp-highlight', buffer = event2.buf }
@@ -175,6 +179,19 @@ return {
 			end,
 		})
 
+		vim.lsp.config.clangd = {
+			cmd = {
+				'clangd',
+				'--clang-tidy',
+				'--background-index',
+				'--offset-encoding=utf-8',
+			},
+			init_options = {
+				fallbackFlags = { "-std=c++23" },
+			},
+			root_markers = { '.clangd', 'compile_commands.json' },
+			filetypes = { 'c', 'cpp' },
+		}
 		-- Diagnostic Config
 		-- See :help vim.diagnostic.Opts
 		vim.diagnostic.config {
@@ -209,15 +226,6 @@ return {
 
 		-- Define LSP servers and their settings (no `capabilities` here)
 		local servers = {
-			ocamllsp = {
-				settings = {
-					codelens = { enable = true },
-					inlayHints = { hintPatternVariables = true, hintLetBindings = true },
-					extendedHover = { enable = true },
-					syntaxDocumentation = { enable = true },
-					merlinJumpCodeActions = { enable = true },
-				},
-			},
 			lua_ls = {
 				settings = {
 					Lua = {
@@ -230,16 +238,21 @@ return {
 					},
 				},
 			},
-			clangd = {},
-			rust_analyzer = {}
+			clangd = {
+				init_options = {
+					fallbackFlags = {
+						"-std=c++23", -- use C++23 standard
+						-- you can add include paths etc. here if needed
+						-- e.g. "-I/usr/include", "-I/path/to/project/include"
+					},
+				},
+			},
 		}
 
 		-- Ensure tools are installed via mason-tool-installer
 		local ensure_installed = vim.tbl_keys(servers or {})
 		vim.list_extend(ensure_installed, {
-			'rustfmt',
 			'stylua',
-			'ocamlformat',
 		})
 		require('mason-tool-installer').setup {
 			ensure_installed = ensure_installed,
@@ -252,11 +265,11 @@ return {
 			handlers = {
 				function(server_name)
 					local server = servers[server_name] or {}
-					server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+					server.capabilities = vim.tbl_deep_extend('force', {}, capabilities,
+						server.capabilities or {})
 					require('lspconfig')[server_name].setup(server)
 				end,
 			},
 		}
 	end,
-
 }
